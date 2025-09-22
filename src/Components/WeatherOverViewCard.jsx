@@ -35,7 +35,7 @@ const WeatherOverViewCard = ({ country, weather }) => {
       case [95, 96, 99].includes(code):
         return iconStorm;
       default:
-        return "🌍";
+        return iconOvercast;
     }
   };
 
