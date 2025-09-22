@@ -4,7 +4,7 @@ import unitIcon from "/icon-units.svg";
 import { useState } from "react";
 import { clsx } from "clsx";
 
-const UnitNav = ({ units, setUnits, isMetric, setIsMetric }) => {
+const UnitNav = ({ units, setUnits, isMetric, setIsMetric, error }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const sections = {
@@ -41,7 +41,7 @@ const UnitNav = ({ units, setUnits, isMetric, setIsMetric }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 flex flex-col bg-neutral-700 w-52 p-2 mt-4 right-0 rounded-md text-white">
+        <div className={error ? "hidden" : "absolute z-10 flex flex-col bg-neutral-700 w-52 p-2 mt-4 right-0 rounded-md text-white"}>
           
           <button
             className="bg-neutral-600 rounded-md p-1 text-sm text-left focus:border-[1px] focus:border-neutral-0"

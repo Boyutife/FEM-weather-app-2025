@@ -6,6 +6,7 @@ const Search = ({
   selectedPlace,
   setSelectedPlace,
   setCountry,
+  error
 }) => {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -64,6 +65,9 @@ const Search = ({
   }, [selectedPlace]);
 
   return (
+    <>
+      {
+        !error && (
     <form
       onSubmit={handleSubmit}
       className="search-input relative flex flex-col items-center  justify-center space-y-2  md:grid md:grid-cols-[2fr_1fr]   md:space-y-0 w-[90%] md:w-[50%] ]"
@@ -97,7 +101,9 @@ const Search = ({
           <p>Search in progress</p>
         </div>
       )}
-    </form>
+    </form>)
+    }
+    </>
   );
 };
 
