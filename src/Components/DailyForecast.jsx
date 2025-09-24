@@ -7,10 +7,25 @@ import iconSunny from "/icon-sunny.webp";
 import iconOvercast from "/icon-overcast.webp";
 import iconPartlyCloud from "/icon-partly-cloudy.webp";
 
-const DailyForecast = ({ weather }) => {
-  if (!weather || !weather.hourly) {
-     return <div className="flex w-full h-full bg-neutral-800 rounded-xl" />;
+const DailyForecast = ({ weather, loading }) => {
+
+  if (loading) {
+    return (
+      <div className="flex flex-col w-full h-full text-white space-y-2">
+      <h3>Daily forecast</h3>
+        <div className="flex-1 grid grid-cols-3 md:grid-cols-7 gap-2">
+          {
+            Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="w-full h-full bg-neutral-700 rounded-md animate-pulse"></div>
+            ))
+          }
+        </div>
+        </div>
+    )
   }
+
+  if (!weather) { return null };
+
   const dailyWeather = weather.daily;
 
   const getWeatherIcon = (code) => {
@@ -48,18 +63,13 @@ const toFahrenheit = (celsius) => Math.round((celsius * 9) / 5 + 32);
       <div className="flex-1 grid grid-cols-3 md:grid-cols-7 gap-2">
         {dailyWeather.time.map((date, i) => {
           const maxTemp = dailyWeather.temperature_2m_max[i]
-        
-
           const minTemp = dailyWeather.temperature_2m_min[i]
-          
-
-          
           return(
           <div
-            key={date}
-            className="w-full h-full bg-neutral-700 rounded-lg text-white flex flex-col text-center px-4 py-2 justify-between"
+              key={date}
+              className={`w-full h-full bg-neutral-700 rounded-lg text-white flex flex-col text-center px-4 py-2 justify-between`}
           >
-            <p>{dayAbbr(date)}</p>
+             <p>{dayAbbr(date)}</p>
             <img
               src={getWeatherIcon(dailyWeather.weathercode[i])}
               alt="weather icon"

@@ -1,4 +1,4 @@
-
+import dropdown from '/icon-dropdown.svg'
 import iconRain from "/icon-rain.webp";
 import iconDrizzle from "/icon-drizzle.webp";
 import iconFog from "/icon-fog.webp";
@@ -10,14 +10,39 @@ import iconPartlyCloud from "/icon-partly-cloudy.webp";
 
 
 
-const HourlyForecast = ({ weather, selectedDay, setSelectedDay }) => {
- 
+const HourlyForecast = ({ weather, selectedDay, setSelectedDay, loading }) => {
 
+  const SkeletonItem = () => (
+  <div className="w-full h-8 bg-neutral-700 p-2 rounded-md animate-pulse" />
+);
 
-  if (!weather?.daily?.time || !weather?.hourly?.time) {
-    return <p className="text-neutral-400 w-full h-full"></p>;
+  if (loading) {
+    return (
+      <div className="flex w-full h-full text-white p-2 rounded-xl bg-neutral-800 flex-col">
+      <header className="flex justify-between items-center w-full">
+        <h3>Hourly forecast</h3>
+        {
+          <div className='flex space-x-4 rounded-lg bg-neutral-600 p-2 text-sm'>
+            <p>-</p>
+            <img src={dropdown} alt="icon dropdown" />
+          </div>
+        }
+      </header>
+      <main className="flex-1 flex justify-between mt-4 w-full">
+        <ul
+          className="flex flex-col space-y-3 w-full max-h-96 overflow-y-auto "
+        >
+          {
+            Array.from({ length: 10 }).map((_, i) => (<SkeletonItem key={ i} />))
+          }
+        </ul>
+      </main>
+    </div>)}
+
+  if (!weather || !weather.hourly) {
+    return null;
   }
-
+ 
   const getWeatherIcon = (code) => {
     switch (true) {
       case code === 0:
@@ -39,6 +64,8 @@ const HourlyForecast = ({ weather, selectedDay, setSelectedDay }) => {
     }
   };
 
+
+
   const hoursForSelectedDay = weather.hourly.time
     .map((time, i) => {
       const date = new Date(time);
@@ -56,7 +83,8 @@ const HourlyForecast = ({ weather, selectedDay, setSelectedDay }) => {
     <div className="flex w-full h-full text-white p-2 rounded-xl bg-neutral-800 flex-col">
       <header className="flex justify-between items-center w-full">
         <h3>Hourly forecast</h3>
-        <select
+        {
+              <select
           className="flex rounded-lg bg-neutral-600 p-2 text-sm"
           value={selectedDay}
           onChange={(e) => setSelectedDay(e.target.value)}
@@ -69,10 +97,11 @@ const HourlyForecast = ({ weather, selectedDay, setSelectedDay }) => {
             </option>
           ))}
         </select>
+          
+        }
       </header>
       <main className="flex-1 flex justify-between mt-4 w-full">
         <ul
-          
           className="flex flex-col space-y-3 w-full max-h-96 overflow-y-auto "
         >
           {hoursForSelectedDay.length > 0 ? (
@@ -99,7 +128,8 @@ const HourlyForecast = ({ weather, selectedDay, setSelectedDay }) => {
             ))
           ) : (
             <p className="text-sm text-neutral-400">Select a day</p>
-          )}
+          )
+          }
         </ul>
       </main>
     </div>

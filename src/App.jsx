@@ -18,11 +18,11 @@ const App = () => {
 });
 const [isMetric, setIsMetric] = useState(true);
 
+  const [loading, setLoading] = useState(true);
+  
 const [rawWeather, setRawWeather] = useState(null);
 const [weather, setWeather] = useState(null);
 
-
-  const [loading, setLoading] = useState(true);
 const [error, setError] = useState(false);
 
 const toFahrenheit = (celsius) => Math.round((celsius * 9) / 5 + 32);
@@ -42,12 +42,12 @@ const toInches = (mm) => Math.round(mm / 25.4);
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
 
       try {
         const res = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
         );
 
         if (!res.ok) throw new Error("Failed to fetch location data");
@@ -56,7 +56,7 @@ const toInches = (mm) => Math.round(mm / 25.4);
 
         setSelectedPlace(data.city);
         setCountry({ name: data.city, country: data.countryName });
-        setCoords({ lat, lon });
+        setCoords({ latitude, longitude });
       } catch (err) {
         console.error("Error fetching location:", err);
 
@@ -72,7 +72,7 @@ const toInches = (mm) => Math.round(mm / 25.4);
       
       setSelectedPlace("Berlin");
       setCountry({ name: "Berlin", country: "Germany" });
-      setCoords({ lat: 52.52, lon: 13.405 });
+      setCoords({ latitude: 52.52, longitude: 13.405 });
     },
     { timeout: 10000 }
   );
@@ -161,36 +161,36 @@ const toInches = (mm) => Math.round(mm / 25.4);
           />
         </section>
        <section className="flex-1 w-[90%] md:w-[75%]">
-  {loading && (
-    <div className="flex justify-center items-center h-64 text-gray-500">
-      Loading weather data...
-    </div>
-  )}
 
-  {error && (
-            <div className="flex flex-col items-center justify-center h-64 text-neutral-0 space-y-4">
-              <img src={iconError} alt="error icon" className="md:w-10" />
-      <h2 className="text-2xl font-bold md:text-4xl">Something went wrong</h2>
-              <p className="text-sm text-gray-400 text-pretty md:text-xl">We couldn't connect to the server (API error). Please try again in a few moments.</p>
-              <button  type="button"
-        className="flex space-x-2 bg-neutral-800 py-1 focus:border-[1px] px-2 rounded-md focus:border-neutral-0 md:mt-4"
-        onClick={() =>fetchWeather()}>
-                <img src={iconRetry} alt="retry icon" className="w-4" />
-                <p>Retry</p>
-              </button>
-    </div>
-  )}
+                {error && (
+                    <div className="flex flex-col items-center justify-center h-64 text-neutral-0 space-y-4">
+                      <img src={iconError} alt="error icon" className="md:w-10" />
+              <h2 className="text-2xl font-bold md:text-4xl">Something went wrong</h2>
+                      <p className="text-sm text-gray-400 text-pretty md:text-xl">We couldn't connect to the server (API error). Please try again in a few moments.</p>
+                      <button  type="button"
+                className="flex space-x-2 bg-neutral-800 py-1 focus:border-[1px] px-2 rounded-md focus:border-neutral-0 md:mt-4"
+                onClick={() =>coords.latitude && fetchWeather()}>
+                        <img src={iconRetry} alt="retry icon" className="w-4" />
+                        <p>Retry</p>
+                      </button>
+            </div>
+          )}
 
-  {!loading && !error && weather && (
-    <WeatherProps
-      selectedPlace={selectedPlace}
-      country={country}
-      weather={weather}
-      units={units}
-      selectedDay={selectedDay}
-      setSelectedDay={setSelectedDay}
-    />
-  )}
+  
+          {
+            !error && (
+               <WeatherProps
+                      selectedPlace={selectedPlace}
+                      country={country}
+                      weather={weather}
+                      units={units}
+                      selectedDay={selectedDay}
+                      setSelectedDay={setSelectedDay}
+                      loading={loading}
+                    />
+               )
+             }
+  
 </section>
 
       </div>
