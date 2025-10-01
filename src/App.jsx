@@ -5,6 +5,7 @@ import iconError from '/icon-error.svg'
 import iconRetry from '/icon-retry.svg'
 import WeatherProps from "./Components/WeatherProps";
 import { useState, useEffect } from "react";
+import axios from "axios";
 
 const App = () => {
   const [coords, setCoords] = useState({ latitude: null, longitude: null });
@@ -31,6 +32,7 @@ const toInches = (mm) => Math.round(mm / 25.4);
 
 
 
+
   useEffect(() => {
   if (!navigator.geolocation) {
     console.error("Geolocation not supported, using fallback...");
@@ -40,42 +42,37 @@ const toInches = (mm) => Math.round(mm / 25.4);
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+ navigator.geolocation.getCurrentPosition(
+  async (position) => {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
 
-      try {
-        const res = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-        );
+    try {
+      const res = await axios.get(
+        "https://api.bigdatacloud.net/data/reverse-geocode-client",
+        {
+          params: {
+            latitude,
+            longitude,
+            localityLanguage: "en",
+          },
+        }
+      );
 
-        if (!res.ok) throw new Error("Failed to fetch location data");
+      setSelectedPlace(res.data.city);
+      setCountry({ name: res.data.city, country: res.data.countryName });
+      setCoords({ latitude, longitude });
+    } catch (err) {
+      console.error("Error fetching location:", err);
 
-        const data = await res.json();
-
-        setSelectedPlace(data.city);
-        setCountry({ name: data.city, country: data.countryName });
-        setCoords({ latitude, longitude });
-      } catch (err) {
-        console.error("Error fetching location:", err);
-
-        
-        setSelectedPlace("Berlin");
-        setCountry({ name: "Berlin", country: "Germany" });
-        setCoords({ lat: 52.52, lon: 13.405 });
-      }
-    },
-    (error) => {
-      console.error("Geolocation error:", error);
-
-      
+      // fallback to Berlin if error
       setSelectedPlace("Berlin");
       setCountry({ name: "Berlin", country: "Germany" });
       setCoords({ latitude: 52.52, longitude: 13.405 });
-    },
-    { timeout: 10000 }
-  );
+    }
+  }
+);
+;
   }, []);
   
   const fetchWeather = async () => {
@@ -83,15 +80,19 @@ const toInches = (mm) => Math.round(mm / 25.4);
       setError(false)
 
       try {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weathercode&timezone=auto`,
-        );
+       const BASE_URL = "https://api.open-meteo.com/v1/forecast";
 
-        if (!res.ok) {
-          throw new Error ("Weather fetch failed")
-        }
-        const data = await res.json();
-        setRawWeather(data)
+const response = await axios.get(BASE_URL, {
+  params: {
+    latitude: coords.latitude,
+    longitude: coords.longitude,
+    hourly: "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weathercode",
+    daily: "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weathercode",
+    timezone: "auto",
+  },
+});
+setRawWeather(response.data);
+
         
       } catch (error) {
         console.error(error);
