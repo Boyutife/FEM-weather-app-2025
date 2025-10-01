@@ -1,6 +1,8 @@
 import searchIcon from "/icon-search.svg";
 import loadingIcon from "/icon-loading.svg";
+import { FaMicrophoneAlt , FaMicrophoneAltSlash} from "react-icons/fa";
 import { useEffect, useState } from "react";
+import { useSpeechRecognition } from "../Hooks/useSpeechRecognitionHook";
 const Search = ({
   setCoords,
   selectedPlace,
@@ -10,12 +12,38 @@ const Search = ({
 }) => {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const { text, isListening, startListening, stopListening, hasRecognition } =
+    useSpeechRecognition();
+  
 
+  useEffect(() => {
+    if (!text) return;
+    
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    const timeOut = setTimeout(() => {
+      if (trimmed !== query) {
+        setQuery(trimmed);
+        runSearch(trimmed);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeOut);
+ 
+  }, [text]);
+  
+
+  const runSearch = (place) => {
+    if (!place.trim()) return;
+    setSelectedPlace(place)
+  }
+  
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    setSelectedPlace(query);
+    runSearch(query)
   };
+
 
   useEffect(() => {
     if (!selectedPlace) return;
@@ -76,7 +104,7 @@ const Search = ({
         htmlFor="search "
         className="flex space-x-1 bg-neutral-800  p-2 rounded-lg w-full border-neutral-0 focus-within:border-[1px]"
       >
-        <img src={searchIcon} alt="search icon" className="w-5 mx-4" />
+        <img src={searchIcon} alt="search icon" className="w-5  md:mx-4" />
         <input
           type="search"
           name="search"
@@ -85,7 +113,21 @@ const Search = ({
           className="pl-2 bg-transparent text-lg outline-none text-white flex-1 "
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-        />
+              />
+      {hasRecognition && (
+    <button
+      type="button" 
+      onClick= {isListening ? stopListening : startListening}
+      className="p-2 rounded-full bg-gray-200"
+    >
+      {isListening ? (
+        <FaMicrophoneAlt className="text-red-500" />
+      ) : (
+        <FaMicrophoneAltSlash className="text-gray-700" />
+      )}
+    </button>
+  )}
+
       </label>
 
       <button
@@ -108,3 +150,5 @@ const Search = ({
 };
 
 export default Search;
+
+

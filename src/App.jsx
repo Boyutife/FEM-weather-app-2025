@@ -42,38 +42,37 @@ const toInches = (mm) => Math.round(mm / 25.4);
     return;
   }
 
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+ navigator.geolocation.getCurrentPosition(
+  async (position) => {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
 
-      try {
-        const res = await axios.get(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-        );
+    try {
+      const res = await axios.get(
+        "https://api.bigdatacloud.net/data/reverse-geocode-client",
+        {
+          params: {
+            latitude,
+            longitude,
+            localityLanguage: "en",
+          },
+        }
+      );
 
-        setSelectedPlace(res.data.city);
-        setCountry({ name: res.data.city, country: res.data.countryName });
-        setCoords({ latitude, longitude });
-      } catch (err) {
-        console.error("Error fetching location:", err);
+      setSelectedPlace(res.data.city);
+      setCountry({ name: res.data.city, country: res.data.countryName });
+      setCoords({ latitude, longitude });
+    } catch (err) {
+      console.error("Error fetching location:", err);
 
-        
-        setSelectedPlace("Berlin");
-        setCountry({ name: "Berlin", country: "Germany" });
-        setCoords({ latitude: 52.52, longitude: 13.405 });
-      }
-    },
-    (error) => {
-      console.error("Geolocation error:", error);
-
-      
+      // fallback to Berlin if error
       setSelectedPlace("Berlin");
       setCountry({ name: "Berlin", country: "Germany" });
       setCoords({ latitude: 52.52, longitude: 13.405 });
-    },
-    { timeout: 10000 }
-  );
+    }
+  }
+);
+;
   }, []);
   
   const fetchWeather = async () => {
@@ -81,12 +80,19 @@ const toInches = (mm) => Math.round(mm / 25.4);
       setError(false)
 
       try {
-        const response = await axios.get(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weathercode&timezone=auto`,
-        );
+       const BASE_URL = "https://api.open-meteo.com/v1/forecast";
 
-        console.log(response.data)
-        setRawWeather(response.data)
+const response = await axios.get(BASE_URL, {
+  params: {
+    latitude: coords.latitude,
+    longitude: coords.longitude,
+    hourly: "temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,weathercode",
+    daily: "temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weathercode",
+    timezone: "auto",
+  },
+});
+setRawWeather(response.data);
+
         
       } catch (error) {
         console.error(error);
