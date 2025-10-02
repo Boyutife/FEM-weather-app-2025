@@ -3,6 +3,7 @@ import loadingIcon from "/icon-loading.svg";
 import { FaMicrophoneAlt , FaMicrophoneAltSlash} from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useSpeechRecognition } from "../Hooks/useSpeechRecognitionHook";
+import axios from "axios";
 const Search = ({
   setCoords,
   selectedPlace,
@@ -12,9 +13,46 @@ const Search = ({
 }) => {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [fromClick, setFromClick] = useState(false)
   const { text, isListening, startListening, stopListening, hasRecognition } =
     useSpeechRecognition();
   
+ const fetchSuggestions = async (value) => {
+  if (!value) {
+    setSuggestions([]);
+    return;
+  }
+  try {
+    const res = await axios.get("https://geocoding-api.open-meteo.com/v1/search", {
+      params: {
+        name: value,      
+        count: 5,           
+        language: "en",     
+        format: "json"
+      }
+    });
+    setSuggestions(res.data.results || []);
+  } catch (err) {
+    console.error("Error fetching location:", err);
+    setSuggestions([]);
+  }
+};
+
+  useEffect(() => {
+
+     if (!query || fromClick) {
+      setFromClick(false);
+      return;
+    }
+    const timeOut = setTimeout(() => {
+      fetchSuggestions(query)
+    }, 300)
+    
+    return ()=>clearTimeout(timeOut)
+  },[query])
+
+
 
   useEffect(() => {
     if (!text) return;
@@ -142,6 +180,29 @@ const Search = ({
           <img src={loadingIcon} alt="loading icon" className="w-5 mx-4" />
           <p>Search in progress</p>
         </div>
+            )}
+            
+             {suggestions.length > 0 && (
+        <ul className="absolute z-10 w-full bg-neutral-700 top-full mt-1 rounded-md shadow text-neutral-0 p-2 divide-y divide-neutral-500">
+          {suggestions.map((item, index) => (
+            <li
+                  key={index}
+                  className="p-2 hover:bg-slate-600 cursor-pointer"
+                  onClick={() => {
+                    const placeName = `${item.name}, ${item.country}`;
+                    setFromClick(true)
+                    setQuery(placeName);
+                    setCoords({ latitude: item.latitude, longitude: item.longitude });
+                    setCountry({ name: item.name, country: item.country });
+                    setSelectedPlace(placeName);
+                    setSuggestions([]);
+                  }}
+                >
+                  {item.name}, {item.country}
+                </li>
+
+          ))}
+        </ul>
       )}
     </form>)
     }
